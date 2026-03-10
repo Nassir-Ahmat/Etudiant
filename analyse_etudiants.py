@@ -1,22 +1,19 @@
+import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
-import matplotlib.pyplot as plt
 
-# ------------------------------
-# 1. Charger le dataset
-# ------------------------------
+st.set_page_config(page_title="Analyse des étudiants", layout="wide")
 
+st.title("Analyse de la charge des étudiants")
+st.write("Cette application analyse le temps consacré aux études, aux certifications et à la recherche de stage.")
+
+# Charger le dataset
 df = pd.read_csv("student.csv")
 
-print("Dataset chargé")
-print("Nombre de lignes :", df.shape[0])
-print("Nombre de colonnes :", df.shape[1])
+st.subheader("Aperçu du dataset")
+st.dataframe(df.head())
 
-# ------------------------------
-# 2. Création de nouvelles métriques
-# ------------------------------
-
+# Création métrique
 df["charge_totale"] = (
     df["heures_transport"]
     + df["heures_ecole"]
@@ -25,35 +22,8 @@ df["charge_totale"] = (
     + df["temps_linkedin"]
 )
 
-df["taux_entretien"] = df["entretiens"] / df["candidatures_envoyees"]
-
-df["candidatures_par_entretien"] = df["candidatures_envoyees"] / (df["entretiens"] + 1)
-
-# ------------------------------
-# 3. Statistiques générales
-# ------------------------------
-
-print("\nSTATISTIQUES")
-print(df.describe())
-
-print("\nTemps moyen recherche stage :", round(df["heures_recherche_stage"].mean(),2))
-print("Temps moyen école :", round(df["heures_ecole"].mean(),2))
-print("Temps moyen certification :", round(df["heures_certification"].mean(),2))
-
-print("Candidatures moyennes :", round(df["candidatures_envoyees"].mean(),2))
-print("Entretiens moyens :", round(df["entretiens"].mean(),2))
-
-# ------------------------------
-# 4. Création dossier graphiques
-# ------------------------------
-
-if not os.path.exists("graphiques"):
-    os.makedirs("graphiques")
-
-# ------------------------------
-# 5. Bar chart : temps moyen par activité
-# ------------------------------
-
+# 1. Temps moyen par activité
+st.subheader("Temps moyen par activité")
 activities = [
     "heures_sommeil",
     "heures_transport",
@@ -65,78 +35,55 @@ activities = [
 
 avg_values = df[activities].mean()
 
-plt.figure(figsize=(10,6))
-avg_values.plot(kind="bar")
-plt.title("Temps moyen par activité")
-plt.ylabel("Heures moyennes")
+fig1, ax1 = plt.subplots()
+avg_values.plot(kind="bar", ax=ax1)
+ax1.set_title("Temps moyen par activité")
+ax1.set_ylabel("Heures moyennes")
+ax1.set_xlabel("Activités")
 plt.xticks(rotation=45)
+st.pyplot(fig1)
 
-plt.savefig("graphiques/temps_moyen_activites.png")
-plt.close()
+# 2. Distribution des candidatures
+st.subheader("Distribution des candidatures envoyées")
+fig2, ax2 = plt.subplots()
+ax2.hist(df["candidatures_envoyees"], bins=20)
+ax2.set_title("Distribution des candidatures envoyées")
+ax2.set_xlabel("Nombre de candidatures")
+ax2.set_ylabel("Fréquence")
+st.pyplot(fig2)
 
-# ------------------------------
-# 6. Histogramme candidatures
-# ------------------------------
+# 3. Candidatures vs entretiens
+st.subheader("Candidatures envoyées vs entretiens obtenus")
+fig3, ax3 = plt.subplots()
+ax3.scatter(df["candidatures_envoyees"], df["entretiens"])
+ax3.set_title("Candidatures vs Entretiens")
+ax3.set_xlabel("Candidatures envoyées")
+ax3.set_ylabel("Entretiens obtenus")
+st.pyplot(fig3)
 
-plt.figure(figsize=(10,6))
-plt.hist(df["candidatures_envoyees"], bins=20)
-plt.title("Distribution des candidatures envoyées")
-plt.xlabel("Nombre de candidatures")
-plt.ylabel("Fréquence")
-
-plt.savefig("graphiques/distribution_candidatures.png")
-plt.close()
-
-# ------------------------------
-# 7. Scatter plot candidatures vs entretiens
-# ------------------------------
-
-plt.figure(figsize=(10,6))
-plt.scatter(df["candidatures_envoyees"], df["entretiens"])
-
-plt.title("Candidatures vs Entretiens")
-plt.xlabel("Candidatures envoyées")
-plt.ylabel("Entretiens obtenus")
-
-plt.savefig("graphiques/candidatures_vs_entretiens.png")
-plt.close()
-
-# ------------------------------
-# 8. Top 10 étudiants débordés
-# ------------------------------
-
+# 4. Top 10 étudiants les plus débordés
+st.subheader("Top 10 étudiants les plus débordés")
 top10 = df.sort_values("charge_totale", ascending=False).head(10)
 
-plt.figure(figsize=(10,6))
-plt.bar(top10["etudiant"], top10["charge_totale"])
-
-plt.title("Top 10 étudiants les plus débordés")
-plt.xlabel("Etudiants")
-plt.ylabel("Heures")
-
+fig4, ax4 = plt.subplots()
+ax4.bar(top10["etudiant"], top10["charge_totale"])
+ax4.set_title("Top 10 étudiants les plus débordés")
+ax4.set_xlabel("Étudiants")
+ax4.set_ylabel("Charge totale")
 plt.xticks(rotation=45)
+st.pyplot(fig4)
 
-plt.savefig("graphiques/top10_etudiants_debordes.png")
-plt.close()
+# 5. Répartition des entretiens
+st.subheader("Répartition des entretiens")
+interviews = df["entretiens"].value_counts().sort_index()
 
-# ------------------------------
-# 9. Pie chart entretiens
-# ------------------------------
+fig5, ax5 = plt.subplots()
+ax5.pie(interviews, labels=interviews.index, autopct="%1.1f%%")
+ax5.set_title("Répartition des entretiens")
+st.pyplot(fig5)
 
-interviews = df["entretiens"].value_counts()
-
-plt.figure(figsize=(8,8))
-plt.pie(interviews, labels=interviews.index, autopct="%1.1f%%")
-
-plt.title("Répartition des entretiens")
-
-plt.savefig("graphiques/repartition_entretiens.png")
-plt.close()
-
-# ------------------------------
-# 10. Comparaison recherche stage / école / certification
-# ------------------------------
-
+# 6. Comparaison recherche stage / école / certification
+st.subheader("Comparaison du temps moyen")
 compare_cols = [
     "heures_recherche_stage",
     "heures_ecole",
@@ -145,20 +92,10 @@ compare_cols = [
 
 compare_means = df[compare_cols].mean()
 
-plt.figure(figsize=(8,6))
-compare_means.plot(kind="bar")
-
-plt.title("Comparaison temps moyen")
-plt.ylabel("Heures")
-
-plt.savefig("graphiques/comparaison_temps.png")
-plt.close()
-
-# ------------------------------
-# 11. Sauvegarde dataset enrichi
-# ------------------------------
-
-df.to_csv("dataset_analyse.csv", index=False)
-
-print("\nAnalyse terminée")
-print("Les graphiques sont dans le dossier : graphiques/")
+fig6, ax6 = plt.subplots()
+compare_means.plot(kind="bar", ax=ax6)
+ax6.set_title("Comparaison temps moyen")
+ax6.set_ylabel("Heures")
+ax6.set_xlabel("Activités")
+plt.xticks(rotation=0)
+st.pyplot(fig6)
