@@ -443,7 +443,7 @@ with tab6:
 # =========================================================
 # CONCLUSION
 # =========================================================
-st.subheader("Conclusion automatique")
+st.subheader("Conclusion")
 st.write(
     f"L'analyse montre que les étudiants consacrent en moyenne {filtered_df['heures_recherche_stage'].mean():.2f} heures "
     f"à la recherche de stage contre {filtered_df['heures_ecole'].mean():.2f} heures à l'école. "
