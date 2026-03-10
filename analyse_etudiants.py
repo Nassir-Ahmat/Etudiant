@@ -5,33 +5,29 @@ import matplotlib.pyplot as plt
 # ------------------------------
 # Configuration générale
 # ------------------------------
-st.set_page_config(page_title="Analyse des étudiants", layout="wide")
+st.set_page_config(page_title="Analyse des étudiants", layout="centered")
 
 plt.rcParams.update({
-    "font.size": 8,
-    "axes.titlesize": 10,
-    "axes.labelsize": 9,
-    "xtick.labelsize": 8,
-    "ytick.labelsize": 8,
-    "legend.fontsize": 8
+    "font.size": 6,
+    "axes.titlesize": 7,
+    "axes.labelsize": 6,
+    "xtick.labelsize": 5,
+    "ytick.labelsize": 5,
+    "legend.fontsize": 5
 })
 
 # ------------------------------
 # Titre
 # ------------------------------
 st.title("Analyse de la charge des étudiants")
-st.write(
-    "Cette application analyse le temps consacré aux études, aux certifications "
-    "et à la recherche de stage ou d’alternance."
-)
 
 # ------------------------------
-# Chargement des données
+# Charger dataset
 # ------------------------------
 df = pd.read_csv("student.csv")
 
 # ------------------------------
-# Création de métriques
+# Nouvelle métrique
 # ------------------------------
 df["charge_totale"] = (
     df["heures_transport"]
@@ -41,30 +37,28 @@ df["charge_totale"] = (
     + df["temps_linkedin"]
 )
 
-df["taux_entretien"] = df["entretiens"] / df["candidatures_envoyees"]
-
 # ------------------------------
-# Aperçu du dataset
+# Aperçu données
 # ------------------------------
-st.subheader("Aperçu du dataset")
+st.subheader("Dataset")
 st.dataframe(df.head())
 
 # ------------------------------
 # KPI
 # ------------------------------
-st.subheader("Indicateurs clés")
+st.subheader("Indicateurs")
 
-col1, col2, col3, col4 = st.columns(4)
+c1, c2, c3, c4 = st.columns(4)
 
-col1.metric("Temps moyen recherche stage", f"{df['heures_recherche_stage'].mean():.2f} h")
-col2.metric("Temps moyen école", f"{df['heures_ecole'].mean():.2f} h")
-col3.metric("Candidatures moyennes", f"{df['candidatures_envoyees'].mean():.2f}")
-col4.metric("Entretiens moyens", f"{df['entretiens'].mean():.2f}")
+c1.metric("Recherche stage (h)", f"{df['heures_recherche_stage'].mean():.1f}")
+c2.metric("Ecole (h)", f"{df['heures_ecole'].mean():.1f}")
+c3.metric("Candidatures", f"{df['candidatures_envoyees'].mean():.0f}")
+c4.metric("Entretiens", f"{df['entretiens'].mean():.1f}")
 
 # ------------------------------
-# 1. Temps moyen par activité
+# 1 Temps moyen activité
 # ------------------------------
-st.subheader("1. Temps moyen par activité")
+st.subheader("Temps moyen par activité")
 
 activities = [
     "heures_sommeil",
@@ -75,97 +69,67 @@ activities = [
     "temps_linkedin"
 ]
 
-avg_values = df[activities].mean()
-
-fig1, ax1 = plt.subplots(figsize=(6, 4))
-avg_values.plot(kind="bar", ax=ax1)
-ax1.set_title("Temps moyen par activité", fontsize=10)
-ax1.set_ylabel("Heures moyennes", fontsize=9)
-ax1.set_xlabel("Activités", fontsize=9)
-plt.xticks(rotation=45, fontsize=8)
-plt.yticks(fontsize=8)
+fig1, ax1 = plt.subplots(figsize=(3,2))
+df[activities].mean().plot(kind="bar", ax=ax1)
+plt.xticks(rotation=45)
 plt.tight_layout()
 st.pyplot(fig1)
 
 # ------------------------------
-# 2. Distribution des candidatures
+# 2 Distribution candidatures
 # ------------------------------
-st.subheader("2. Distribution des candidatures envoyées")
+st.subheader("Distribution candidatures")
 
-fig2, ax2 = plt.subplots(figsize=(6, 4))
+fig2, ax2 = plt.subplots(figsize=(3,2))
 ax2.hist(df["candidatures_envoyees"], bins=20)
-ax2.set_title("Distribution des candidatures envoyées", fontsize=10)
-ax2.set_xlabel("Nombre de candidatures", fontsize=9)
-ax2.set_ylabel("Fréquence", fontsize=9)
-plt.xticks(fontsize=8)
-plt.yticks(fontsize=8)
 plt.tight_layout()
 st.pyplot(fig2)
 
 # ------------------------------
-# 3. Candidatures vs entretiens
+# 3 Scatter candidatures / entretiens
 # ------------------------------
-st.subheader("3. Candidatures envoyées vs entretiens obtenus")
+st.subheader("Candidatures vs Entretiens")
 
-fig3, ax3 = plt.subplots(figsize=(6, 4))
+fig3, ax3 = plt.subplots(figsize=(3,2))
 ax3.scatter(df["candidatures_envoyees"], df["entretiens"])
-ax3.set_title("Candidatures vs Entretiens", fontsize=10)
-ax3.set_xlabel("Candidatures envoyées", fontsize=9)
-ax3.set_ylabel("Entretiens obtenus", fontsize=9)
-plt.xticks(fontsize=8)
-plt.yticks(fontsize=8)
 plt.tight_layout()
 st.pyplot(fig3)
 
 # ------------------------------
-# 4. Top 10 étudiants les plus débordés
+# 4 Top 10 étudiants débordés
 # ------------------------------
-st.subheader("4. Top 10 étudiants les plus débordés")
+st.subheader("Top 10 étudiants débordés")
 
 top10 = df.sort_values("charge_totale", ascending=False).head(10)
 
-fig4, ax4 = plt.subplots(figsize=(7, 4))
+fig4, ax4 = plt.subplots(figsize=(4,2))
 ax4.bar(top10["etudiant"], top10["charge_totale"])
-ax4.set_title("Top 10 étudiants les plus débordés", fontsize=10)
-ax4.set_xlabel("Étudiants", fontsize=9)
-ax4.set_ylabel("Charge totale", fontsize=9)
-plt.xticks(rotation=45, fontsize=7)
-plt.yticks(fontsize=8)
+plt.xticks(rotation=45)
 plt.tight_layout()
 st.pyplot(fig4)
 
 # ------------------------------
-# 5. Répartition des entretiens
+# 5 Répartition entretiens
 # ------------------------------
-st.subheader("5. Répartition des entretiens")
+st.subheader("Répartition entretiens")
 
-interviews = df["entretiens"].value_counts().sort_index()
-
-fig5, ax5 = plt.subplots(figsize=(5, 5))
-ax5.pie(interviews, labels=interviews.index, autopct="%1.1f%%", textprops={"fontsize": 8})
-ax5.set_title("Répartition des entretiens", fontsize=10)
+fig5, ax5 = plt.subplots(figsize=(2.5,2.5))
+df["entretiens"].value_counts().plot.pie(ax=ax5, autopct="%1.1f%%")
 plt.tight_layout()
 st.pyplot(fig5)
 
 # ------------------------------
-# 6. Comparaison recherche / école / certification
+# 6 Comparaison temps
 # ------------------------------
-st.subheader("6. Comparaison du temps moyen : recherche stage vs école vs certification")
+st.subheader("Comparaison temps")
 
-compare_cols = [
+compare = [
     "heures_recherche_stage",
     "heures_ecole",
     "heures_certification"
 ]
 
-compare_means = df[compare_cols].mean()
-
-fig6, ax6 = plt.subplots(figsize=(6, 4))
-compare_means.plot(kind="bar", ax=ax6)
-ax6.set_title("Comparaison du temps moyen", fontsize=10)
-ax6.set_ylabel("Heures", fontsize=9)
-ax6.set_xlabel("Activités", fontsize=9)
-plt.xticks(rotation=0, fontsize=8)
-plt.yticks(fontsize=8)
+fig6, ax6 = plt.subplots(figsize=(3,2))
+df[compare].mean().plot(kind="bar", ax=ax6)
 plt.tight_layout()
 st.pyplot(fig6)
