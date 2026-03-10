@@ -451,3 +451,13 @@ st.write(
     f"{filtered_df['entretiens'].mean():.2f} entretiens. "
     f"Ces résultats mettent en évidence une forte pression liée à l'insertion professionnelle."
 )
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #f5f7fa;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
